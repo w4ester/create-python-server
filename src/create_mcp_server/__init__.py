@@ -1,6 +1,5 @@
 import json
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -8,12 +7,15 @@ from pathlib import Path
 import click
 from packaging.version import parse
 
-MIN_UV_VERSION = '0.4.10'
+MIN_UV_VERSION = "0.4.10"
+
 
 def check_uv_version(required_version: str) -> str | None:
     """Check if uv is installed and has minimum version"""
     try:
-        result = subprocess.run(["uv", "--version"], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["uv", "--version"], capture_output=True, text=True, check=True
+        )
         version = result.stdout.strip()
         match = re.match(r"uv (\d+\.\d+\.\d+)", version)
         if match:
@@ -31,7 +33,9 @@ def check_uv_version(required_version: str) -> str | None:
 def ensure_uv_installed() -> None:
     """Ensure uv is installed at minimum version"""
     if check_uv_version(MIN_UV_VERSION) is None:
-        click.echo(f"❌ Error: uv >= {MIN_UV_VERSION} is required but not installed.", err=True)
+        click.echo(
+            f"❌ Error: uv >= {MIN_UV_VERSION} is required but not installed.", err=True
+        )
         click.echo("To install, visit: https://github.com/astral-sh/uv", err=True)
         sys.exit(1)
 
@@ -49,8 +53,10 @@ def get_claude_config_path() -> Path | None:
         return path
     return None
 
+
 def has_claude_app() -> bool:
     return get_claude_config_path() is not None
+
 
 def update_claude_config(project_name: str, project_path: Path) -> bool:
     """Add the project to the Claude config if possible"""
@@ -68,7 +74,10 @@ def update_claude_config(project_name: str, project_path: Path) -> bool:
             config["mcpServers"] = {}
 
         if project_name in config["mcpServers"]:
-            click.echo(f"⚠️ Warning: {project_name} already exists in Claude.app configuration", err=True)
+            click.echo(
+                f"⚠️ Warning: {project_name} already exists in Claude.app configuration",
+                err=True,
+            )
             click.echo(f"Settings file location: {config_file}", err=True)
             return False
 
@@ -87,27 +96,56 @@ def update_claude_config(project_name: str, project_path: Path) -> bool:
         return False
 
 
-def copy_template(path: Path, name: str) -> None:
-    """Copy template files into src/<project_name>"""
-    template_dir = Path(__file__).parent / "template"
+def get_package_directory(path: Path) -> Path:
+    """Find the package directory under src/"""
     src_dir = next((path / "src").glob("*/__init__.py"), None)
     if src_dir is None:
         click.echo("❌ Error: Could not find __init__.py in src directory", err=True)
         sys.exit(1)
-    target_dir = src_dir.parent
+    return src_dir.parent
+
+
+def copy_template(path: Path, name: str, version: str = "0.1.0") -> None:
+    """Copy template files into src/<project_name>"""
+    template_dir = Path(__file__).parent / "template"
+
+    target_dir = get_package_directory(path)
+
+    from jinja2 import Environment, FileSystemLoader
+
+    env = Environment(loader=FileSystemLoader(str(template_dir)))
+
+    files = [
+        ("__init__.py.jinja2", "__init__.py"),
+        ("server.py.jinja2", "server.py"),
+    ]
+
+    template_vars = {"server_name": name, "server_version": version}
+
     try:
-        shutil.copytree(template_dir, target_dir, dirs_exist_ok=True)
+        for template_file, output_file in files:
+            template = env.get_template(template_file)
+            rendered = template.render(**template_vars)
+
+            out_path = target_dir / output_file
+            out_path.write_text(rendered)
+
     except Exception as e:
-        click.echo(f"❌ Error: Failed to copy template files: {e}", err=True)
+        click.echo(f"❌ Error: Failed to template and write files: {e}", err=True)
         sys.exit(1)
 
-def create_project(path: Path, name: str, use_claude: bool = True) -> None:
+
+def create_project(
+    path: Path, name: str, version: str, use_claude: bool = True
+) -> None:
     """Create a new project using uv"""
     path.mkdir(parents=True, exist_ok=True)
 
     try:
         subprocess.run(
-            ["uv", "init", "--name", name, "--package", "--app", "--quiet"], cwd=path, check=True
+            ["uv", "init", "--name", name, "--package", "--app", "--quiet"],
+            cwd=path,
+            check=True,
         )
     except subprocess.CalledProcessError:
         click.echo("❌ Error: Failed to initialize project.", err=True)
@@ -120,10 +158,17 @@ def create_project(path: Path, name: str, use_claude: bool = True) -> None:
         click.echo("❌ Error: Failed to add mcp dependency.", err=True)
         sys.exit(1)
 
-    copy_template(path, name)
+    copy_template(path, name, version)
 
     # Check if Claude.app is available
-    if use_claude and has_claude_app() and click.confirm("\nClaude.app detected. Would you like to install the server into Claude.app now?", default=True):
+    if (
+        use_claude
+        and has_claude_app()
+        and click.confirm(
+            "\nClaude.app detected. Would you like to install the server into Claude.app now?",
+            default=True,
+        )
+    ):
         update_claude_config(name, path)
 
     relpath = path.relative_to(Path.cwd())
@@ -131,6 +176,34 @@ def create_project(path: Path, name: str, use_claude: bool = True) -> None:
     click.echo("ℹ️ To install dependencies run:")
     click.echo(f"   cd {relpath}")
     click.echo("   uv sync --dev --all-extras")
+
+
+def update_pyproject_settings(
+    project_path: Path, version: str, description: str
+) -> None:
+    """Update project version and description in pyproject.toml"""
+    import toml
+
+    pyproject_path = project_path / "pyproject.toml"
+
+    if not pyproject_path.exists():
+        click.echo("❌ Error: pyproject.toml not found", err=True)
+        sys.exit(1)
+
+    try:
+        pyproject = toml.load(pyproject_path)
+
+        if version is not None:
+            pyproject["project"]["version"] = version
+
+        if description is not None:
+            pyproject["project"]["description"] = description
+
+        pyproject_path.write_text(toml.dumps(pyproject))
+
+    except Exception as e:
+        click.echo(f"❌ Error updating pyproject.toml: {e}", err=True)
+        sys.exit(1)
 
 
 def check_package_name(name: str) -> bool:
@@ -142,10 +215,16 @@ def check_package_name(name: str) -> bool:
         click.echo("❌ Project name must not contain spaces", err=True)
         return False
     if not all(c.isascii() and (c.isalnum() or c in "_-.") for c in name):
-        click.echo("❌ Project name must consist of ASCII letters, digits, underscores, hyphens, and periods", err=True)
+        click.echo(
+            "❌ Project name must consist of ASCII letters, digits, underscores, hyphens, and periods",
+            err=True,
+        )
         return False
     if name.startswith(("_", "-", ".")) or name.endswith(("_", "-", ".")):
-        click.echo("❌ Project name must not start or end with an underscore, hyphen, or period", err=True)
+        click.echo(
+            "❌ Project name must not start or end with an underscore, hyphen, or period",
+            err=True,
+        )
         return False
     return True
 
@@ -162,11 +241,27 @@ def check_package_name(name: str) -> bool:
     help="Project name",
 )
 @click.option(
+    "--version",
+    type=str,
+    help="Server version",
+)
+@click.option(
+    "--description",
+    type=str,
+    help="Project description",
+)
+@click.option(
     "--claudeapp/--no-claudeapp",
     default=True,
     help="Enable/disable Claude.app integration",
 )
-def main(path: Path | None, name: str | None, claudeapp: bool) -> int:
+def main(
+    path: Path | None,
+    name: str | None,
+    version: str | None,
+    description: str | None,
+    claudeapp: bool,
+) -> int:
     """Create a new MCP server project"""
     ensure_uv_installed()
 
@@ -183,18 +278,42 @@ def main(path: Path | None, name: str | None, claudeapp: bool) -> int:
     if not check_package_name(name):
         return 1
 
+    description = (
+        click.prompt("Project description", type=str, default="A MCP server project")
+        if description is None
+        else description
+    )
+
+    assert isinstance(description, str)
+
+    # Validate version if not supplied on command line
+    if version is None:
+        version = click.prompt("Project version", default="0.1.0", type=str)
+        assert isinstance(version, str)
+        try:
+            parse(version)  # Validate semver format
+        except Exception:
+            click.echo(
+                "❌ Error: Version must be a valid semantic version (e.g. 1.0.0)",
+                err=True,
+            )
+            return 1
+
     project_path = (Path.cwd() / name) if path is None else path
 
     # Ask the user if the path is correct if not specified on command line
     if path is None:
         click.echo(f"Project will be created at: {project_path}")
         if not click.confirm("Is this correct?", default=True):
-            project_path = Path(click.prompt("Enter the correct path", type=click.Path(path_type=Path)))
+            project_path = Path(
+                click.prompt("Enter the correct path", type=click.Path(path_type=Path))
+            )
 
     if project_path is None:
         click.echo("❌ Error: Invalid path. Project creation aborted.", err=True)
         return 1
 
-    create_project(project_path, name, claudeapp)
+    create_project(project_path, name, version, claudeapp)
+    update_pyproject_settings(project_path, version, description)
 
     return 0

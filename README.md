@@ -1,37 +1,37 @@
 # MCP Create Server
 
-[![PyPI](https://img.shields.io/pypi/v/mcp-create-server)](https://pypi.org/project/mcp-create-server/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI](https://img.shields.io/pypi/v/create-mcp-server)](https://pypi.org/project/create-mcp-server/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Create MCP server projects with no build configuration.
+Create [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server projects with no build configuration.
 
 ## Quick Overview
 
 ```sh
-# Using pip
-pip install mcp-create-server
-create-mcp-server
-
-# Or using uvx (recommended)
+# Using uvx (recommended)
 uvx create-mcp-server
+
+# Or using pip
+pip install create-mcp-server
+create-mcp-server
 ```
 
 You don't need to install or configure any dependencies manually. The tool will set up everything you need to create an MCP server.
 
 ## Creating a Server
 
-**You'll need to have uv >= 0.4.10 installed on your machine.**
+**You'll need to have [UV](https://docs.astral.sh/uv/) >= 0.4.10 installed on your machine.**
 
 To create a new server, run either of these commands:
-
-### Using pip
-```sh
-pip install mcp-create-server
-create-mcp-server
-```
 
 ### Using uvx (recommended)
 ```sh
 uvx create-mcp-server
+```
+
+### Using pip
+```sh
+pip install create-mcp-server
+create-mcp-server
 ```
 
 It will walk you through creating a new MCP server project. When complete, you'll have a new directory with this structure:
@@ -40,12 +40,11 @@ It will walk you through creating a new MCP server project. When complete, you'l
 my-server/
 ├── README.md
 ├── pyproject.toml
-├── src/
-│   └── my_server/
-│       ├── __init__.py
-│       └── server.py
-└── tests/
-    └── __init__.py
+└── src/
+    └── my_server/
+        ├── __init__.py
+        ├── __main__.py
+        └── server.py
 ```
 
 No configuration or complicated folder structures, only the files you need to run your server.
@@ -62,9 +61,9 @@ uv run my-server
 
 - Simple command-line interface for creating new projects
 - Auto-configures Claude Desktop app integration when available
-- Uses uv for fast, reliable package management
+- Uses [uvx](https://docs.astral.sh/uv/guides/tools/) for fast, reliable package management and project creation
 - Sets up basic MCP server structure
-- Includes example endpoints
+- Uses the [Model Context Protocol Python SDK](https://github.com/modelcontextprotocol/python-sdk) for the server project
 
 ## Philosophy
 

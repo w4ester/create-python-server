@@ -1,12 +1,13 @@
 import asyncio
 
+from mcp.server.models import InitializationOptions
 import mcp.types as types
-from mcp.server import Server
+from mcp.server import NotificationOptions, Server
 from pydantic import AnyUrl
 import mcp.server.stdio
 
 
-class ExampleServer(Server):
+class McpServer(Server):
     """
     Example MCP server demonstrating the three core primitives:
     1. Resources - Simple key-value notes storage accessed via custom URIs
@@ -21,7 +22,7 @@ class ExampleServer(Server):
     """
 
     def __init__(self):
-        super().__init__("example-server")
+        super().__init__("{{server_name}}")
 
         # Store notes as a simple key-value dict to demonstrate state management
         self.notes: dict[str, str] = {}
@@ -55,10 +56,9 @@ class ExampleServer(Server):
 
             name = uri.path
             if name is not None:
-                name = name.lstrip('/')
+                name = name.lstrip("/")
                 return self.notes[name]
             raise ValueError(f"Note not found: {name}")
-
 
         # PROMPT HANDLERS
         # Prompts define templates that can be filled with server state
@@ -171,10 +171,19 @@ class ExampleServer(Server):
 
 
 async def main():
-    server = ExampleServer()
+    server = McpServer()
 
     # Run the server using stdin/stdout streams
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         await server.run(
-            read_stream, write_stream, server.create_initialization_options()
+            read_stream,
+            write_stream,
+            InitializationOptions(
+                server_name="{{server_name}}",
+                server_version="{{server_version}}",
+                capabilities=server.get_capabilities(
+                    notification_options=NotificationOptions(),
+                    experimental_capabilities={},
+                ),
+            ),
         )
