@@ -28,13 +28,6 @@ The server implements one tool:
 
 ### Claude Desktop
 
-Run
-```
-mcp setup --app Claude
-```
-
-or by editing
-
 On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
@@ -51,3 +44,16 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
     }
   }
 ```
+
+## Develop and Debug
+
+Since MCP servers run over stdio, debugging can be challenging. For the best debugging
+experience, we strongly recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+
+You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
+
+```bash
+npx @modelcontextprotocol/inspector uv --directory {{server_directory}} run {{server_name}}
+```
+
+Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
