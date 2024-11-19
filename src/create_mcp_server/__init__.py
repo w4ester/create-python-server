@@ -105,7 +105,9 @@ def get_package_directory(path: Path) -> Path:
     return src_dir.parent
 
 
-def copy_template(path: Path, name: str, version: str = "0.1.0") -> None:
+def copy_template(
+    path: Path, name: str, description: str, version: str = "0.1.0"
+) -> None:
     """Copy template files into src/<project_name>"""
     template_dir = Path(__file__).parent / "template"
 
@@ -116,18 +118,24 @@ def copy_template(path: Path, name: str, version: str = "0.1.0") -> None:
     env = Environment(loader=FileSystemLoader(str(template_dir)))
 
     files = [
-        ("__init__.py.jinja2", "__init__.py"),
-        ("server.py.jinja2", "server.py"),
+        ("__init__.py.jinja2", "__init__.py", target_dir),
+        ("server.py.jinja2", "server.py", target_dir),
+        ("README.md.jinja2", "README.md", path),
     ]
 
-    template_vars = {"server_name": name, "server_version": version}
+    template_vars = {
+        "server_name": name,
+        "server_version": version,
+        "server_description": description,
+        "server_directory": str(path.resolve()),
+    }
 
     try:
-        for template_file, output_file in files:
+        for template_file, output_file, output_dir in files:
             template = env.get_template(template_file)
             rendered = template.render(**template_vars)
 
-            out_path = target_dir / output_file
+            out_path = output_dir / output_file
             out_path.write_text(rendered)
 
     except Exception as e:
@@ -136,7 +144,7 @@ def copy_template(path: Path, name: str, version: str = "0.1.0") -> None:
 
 
 def create_project(
-    path: Path, name: str, version: str, use_claude: bool = True
+    path: Path, name: str, description: str, version: str, use_claude: bool = True
 ) -> None:
     """Create a new project using uv"""
     path.mkdir(parents=True, exist_ok=True)
@@ -158,7 +166,7 @@ def create_project(
         click.echo("❌ Error: Failed to add mcp dependency.", err=True)
         sys.exit(1)
 
-    copy_template(path, name, version)
+    copy_template(path, name, description, version)
 
     # Check if Claude.app is available
     if (
@@ -313,7 +321,7 @@ def main(
         click.echo("❌ Error: Invalid path. Project creation aborted.", err=True)
         return 1
 
-    create_project(project_path, name, version, claudeapp)
+    create_project(project_path, name, description, version, claudeapp)
     update_pyproject_settings(project_path, version, description)
 
     return 0
