@@ -1,22 +1,14 @@
 # Security Policy
-Thank you for helping us keep the application secure.
+Thank you for helping us keep this software secure.
 
 ## Reporting Security Issues
 
-This script is maintained by [Anthropic](https://www.anthropic.com/) as part of the Model Context Protocol project.
-Anthropic takes security seriously, and encourages you to report any security vulnerability promptly so that 
-appropriate action can be taken.
+This software is maintained by [Anthropic](https://www.anthropic.com/) as part of the Model Context Protocol project.
 
-Our security program is managed on HackerOne. Please report any security issues via https://hackerone.com/anthropic-vdp.
+The security of our systems and user data is Anthropic’s top priority. We appreciate the work of security researchers acting in good faith in identifying and reporting potential vulnerabilities.
 
-## Responsible Disclosure
+Our security program is managed on HackerOne and we ask that any validated vulnerability in this functionality be reported through their [submission form](https://hackerone.com/anthropic-vdp/reports/new?type=team&report_type=vulnerability).
 
-We appreciate the efforts of security researchers and individuals who help us maintain the security of our software. 
-If you believe you have found a security vulnerability, please adhere to responsible
-disclosure practices by allowing us a reasonable amount of time to investigate and address the issue
-before making any information public.
+## Vulnerability Disclosure Program
 
-## Policy
-
-See our vulnerability disclosure policy at [HackerOne](https://hackerone.com/anthropic-vdp) for further
-details.
+Our Vulnerability Program Guidelines are defined on our [HackerOne program page](https://hackerone.com/anthropic-vdp).
