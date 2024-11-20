@@ -1,9 +1,22 @@
 [project]
 name = "create-mcp-server"
 version = "1.0.3.dev0"
-description = "Create an MCP server project from a template."
+description = "Create an Model Context Protocol server project from a template."
 readme = "README.md"
 requires-python = ">=3.10"
+authors = [{ name = "Anthropic, PBC." }]
+maintainers = [
+    { name = "David Soria Parra", email = "davidsp@anthropic.com" },
+    { name = "Justin Spahr-Summers", email = "justin@anthropic.com" },
+]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+]
 dependencies = [
     "click>=8.1.7",
     "jinja2>=3.1.4",
@@ -14,6 +27,10 @@ dependencies = [
 [project.scripts]
 create-mcp-server = "create_mcp_server:main"
 
+[project.urls]
+Homepage = "https://modelcontextprotocol.io"
+Repository = "https://github.com/modelcontextprotocol/create-python-server"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -22,7 +39,4 @@ build-backend = "hatchling.build"
 artifacts = ["src/create_mcp_server/template"]
 
 [tool.uv]
-dev-dependencies = [
-    "pyright>=1.1.389",
-    "ruff>=0.7.4",
-]
+dev-dependencies = ["pyright>=1.1.389", "ruff>=0.7.4"]
