@@ -50,10 +50,20 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 Since MCP servers run over stdio, debugging can be challenging. For the best debugging
 experience, we strongly recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
 
+{% if binary_name %}
 You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
 
 ```bash
-npx @modelcontextprotocol/inspector uv --directory {{server_directory}} run {{server_name}}
+npx @modelcontextprotocol/inspector uv --directory {{server_directory}} run {{binary_name}}
 ```
+{% else %}
+This project does not contain a script to start. However, you can still use the MCP Inspector for debugging. To start the inspector, use the following general command structure:
+
+```bash
+npx @modelcontextprotocol/inspector <command-to-run-your-server>
+```
+
+Replace `<command-to-run-your-server>` with the specific command you use to start your MCP server.
+{% endif %}
 
 Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.

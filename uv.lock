@@ -24,7 +24,7 @@ wheels = [
 
 [[package]]
 name = "create-mcp-server"
-version = "1.0.1.dev0"
+version = "1.0.3.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

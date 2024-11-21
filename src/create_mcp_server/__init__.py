@@ -5,10 +5,24 @@ import sys
 from pathlib import Path
 
 import click
+import toml
 from packaging.version import parse
 
 MIN_UV_VERSION = "0.4.10"
 
+
+class PyProject:
+    def __init__(self, path: Path):
+        self.data = toml.load(path)
+
+    @property
+    def name(self) -> str:
+        return self.data["project"]["name"]
+
+    @property
+    def first_binary(self) -> str | None:
+        scripts = self.data["project"].get("scripts", {})
+        return next(iter(scripts.keys()), None)
 
 def check_uv_version(required_version: str) -> str | None:
     """Check if uv is installed and has minimum version"""
@@ -123,7 +137,11 @@ def copy_template(
         ("README.md.jinja2", "README.md", path),
     ]
 
+    pyproject = PyProject(path / "pyproject.toml")
+    bin_name = pyproject.first_binary
+
     template_vars = {
+        "binary_name": bin_name,
         "server_name": name,
         "server_version": version,
         "server_description": description,
@@ -235,6 +253,8 @@ def check_package_name(name: str) -> bool:
         )
         return False
     return True
+
+
 
 
 @click.command()
