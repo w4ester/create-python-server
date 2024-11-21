@@ -341,6 +341,8 @@ def main(
         click.echo("❌ Error: Invalid path. Project creation aborted.", err=True)
         return 1
 
+    project_path = project_path.resolve()
+
     create_project(project_path, name, description, version, claudeapp)
     update_pyproject_settings(project_path, version, description)
 
