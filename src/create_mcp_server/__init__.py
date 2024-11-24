@@ -24,6 +24,7 @@ class PyProject:
         scripts = self.data["project"].get("scripts", {})
         return next(iter(scripts.keys()), None)
 
+
 def check_uv_version(required_version: str) -> str | None:
     """Check if uv is installed and has minimum version"""
     try:
@@ -253,8 +254,6 @@ def check_package_name(name: str) -> bool:
         )
         return False
     return True
-
-
 
 
 @click.command()
