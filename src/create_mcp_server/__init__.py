@@ -130,7 +130,7 @@ def copy_template(
 
     from jinja2 import Environment, FileSystemLoader
 
-    env = Environment(loader=FileSystemLoader(str(template_dir)))
+    env = Environment(loader=FileSystemLoader(str(template_dir)), autoescape=True)
 
     files = [
         ("__init__.py.jinja2", "__init__.py", target_dir),
